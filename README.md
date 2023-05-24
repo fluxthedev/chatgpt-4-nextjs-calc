@@ -777,3 +777,56 @@ export default Calculator;
 In this updated `Calculator` component, the div wrapping the "C" button has been given the classes `w-full` and `flex justify-end`. `w-full` ensures that the div takes up the full available width, while `flex justify-end` aligns the "C" button to the right.
 
 This change should position the "C" button to the right.
+
+
+#### Follow-up Prompt
+Two more issues: 1. subtraction always shows the value 0 after clicking =. 2. Division always shows the value 1 after clicking =. Please fix.
+
+
+#### Response
+It seems like there might be an issue with the `performCalculation` function and how it's using the `display` and `firstOperand` states to calculate the results.
+
+One potential issue might be the `display.slice(firstOperand.length + 1)` call in your `performCalculation` function. Since `firstOperand` is a number and `display` is a string, `firstOperand.length` will be `undefined`, and `undefined + 1` is `NaN`, so `display.slice(NaN)` will return the original `display` string, not the second operand as you might be expecting.
+
+To fix this, you might want to convert `firstOperand` to a string when determining the starting index for the slice:
+
+```jsx
+const secondOperandStartIndex = firstOperand.toString().length + 1;
+```
+
+Then, use `secondOperandStartIndex` when calling `display.slice`:
+
+```jsx
+parseFloat(display.slice(secondOperandStartIndex))
+```
+
+Here's how you can adjust your `performCalculation` function:
+
+```jsx
+const performCalculation = () => {
+  if (firstOperand !== null && currentOperation) {
+    const secondOperandStartIndex = firstOperand.toString().length + 1;
+    const secondOperand = parseFloat(display.slice(secondOperandStartIndex));
+
+    switch (currentOperation) {
+      case '+':
+        return add(parseFloat(firstOperand), secondOperand);
+      case '-':
+        return subtract(parseFloat(firstOperand), secondOperand);
+      case '*':
+        return multiply(parseFloat(firstOperand), secondOperand);
+      case '/':
+        try {
+          return divide(parseFloat(firstOperand), secondOperand);
+        } catch (e) {
+          setDisplay(e.message);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+};
+```
+
+Try making these adjustments and see if they fix the issues you're experiencing with subtraction and division.
