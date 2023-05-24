@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   add,
   subtract,
@@ -15,35 +15,50 @@ const Calculator = () => {
   const [firstOperand, setFirstOperand] = useState(null);
   const [currentOperation, setCurrentOperation] = useState(null);
 
+  const buttons = [
+    '7',
+    '8',
+    '9',
+    '/',
+    '4',
+    '5',
+    '6',
+    '*',
+    '1',
+    '2',
+    '3',
+    '-',
+    '0',
+    '.',
+    '=',
+    '+',
+  ];
+
   const performCalculation = () => {
-    switch (currentOperation) {
-      case '+':
-        return add(
-          parseFloat(firstOperand),
-          parseFloat(display.slice(firstOperand.length + 1))
-        );
-      case '-':
-        return subtract(
-          parseFloat(firstOperand),
-          parseFloat(display.slice(firstOperand.length + 1))
-        );
-      case '*':
-        return multiply(
-          parseFloat(firstOperand),
-          parseFloat(display.slice(firstOperand.length + 1))
-        );
-      case '/':
-        try {
-          return divide(
-            parseFloat(firstOperand),
-            parseFloat(display.slice(firstOperand.length + 1))
-          );
-        } catch (e) {
-          setDisplay(e.message);
-        }
-        break;
-      default:
-        break;
+    if (firstOperand !== null && currentOperation) {
+      const secondOperandStartIndex =
+        firstOperand.toString().length + 1;
+      const secondOperand = parseFloat(
+        display.slice(secondOperandStartIndex)
+      );
+
+      switch (currentOperation) {
+        case '+':
+          return add(parseFloat(firstOperand), secondOperand);
+        case '-':
+          return subtract(parseFloat(firstOperand), secondOperand);
+        case '*':
+          return multiply(parseFloat(firstOperand), secondOperand);
+        case '/':
+          try {
+            return divide(parseFloat(firstOperand), secondOperand);
+          } catch (e) {
+            setDisplay(e.message);
+          }
+          break;
+        default:
+          break;
+      }
     }
   };
 
@@ -80,24 +95,24 @@ const Calculator = () => {
     }
   };
 
-  const buttons = [
-    '7',
-    '8',
-    '9',
-    '/',
-    '4',
-    '5',
-    '6',
-    '*',
-    '1',
-    '2',
-    '3',
-    '-',
-    '0',
-    '.',
-    '=',
-    '+',
-  ];
+  const handleKeyDown = (event) => {
+    const key = event.key;
+
+    if (key === 'Enter') {
+      handleClick('=');
+    } else if (key === 'Backspace') {
+      handleClick('C');
+    } else if (buttons.includes(key)) {
+      handleClick(key);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup function to remove the event listener when the component is unmounted
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []); // Empty dependency array to only run this effect once on component mount
 
   return (
     <div className="p-10 flex flex-col items-center w-full max-w-lg mx-auto">
